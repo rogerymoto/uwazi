@@ -1,8 +1,10 @@
-import mongoose from 'mongoose';
+import mongoose, { Connection } from 'mongoose';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { Db, ObjectId } from 'mongodb';
 import { FileType } from 'shared/types/fileType';
 import { EntitySchema } from 'shared/types/entityType';
+import { DB } from 'api/odm';
+import { tenants } from 'api/odm/tenantContext';
 
 mongoose.Promise = Promise;
 mongoose.set('useFindAndModify', false);
@@ -39,33 +41,44 @@ const fixturer = {
   },
 };
 
+let mongooseConnection: Connection;
+
 const initMongoServer = async () => {
   mongod = new MongoMemoryServer();
   const uri = await mongod.getUri();
-  await mongoose.connect(uri, {
-    useUnifiedTopology: true,
-    useNewUrlParser: true,
-    useCreateIndex: true,
-  });
+  mongooseConnection = await DB.connect(uri);
   connected = true;
 };
 
+const originalTenansCurrentFN = tenants.current.bind(tenants);
+
 const testingDB: {
   mongodb: Db | null;
-  connect: () => Promise<void>;
+  connect: (options?: { defaultTenant: boolean } | undefined) => Promise<Connection>;
   disconnect: () => Promise<void>;
   id: (id?: string | undefined) => ObjectId;
   clear: (collections?: string[] | undefined) => Promise<void>;
   clearAllAndLoad: (fixtures: DBFixture) => Promise<void>;
+  dbName: string;
 } = {
   mongodb: null,
+  dbName: '',
 
-  async connect() {
+  async connect(options = { defaultTenant: true }) {
     if (!connected) {
       await initMongoServer();
-      mongodb = mongoose.connections[0].db;
+      mongodb = mongooseConnection.db;
       this.mongodb = mongodb;
+
+      this.dbName = await mongod.getDbName();
+
+      if (options.defaultTenant) {
+        tenants.add({ name: this.dbName, dbName: this.dbName, indexName: 'index' });
+        tenants.current = () => ({ name: this.dbName, dbName: this.dbName, indexName: 'index' });
+      }
     }
+
+    return mongooseConnection;
   },
 
   async disconnect() {
@@ -73,6 +86,7 @@ const testingDB: {
     if (mongod) {
       await mongod.stop();
     }
+    tenants.current = originalTenansCurrentFN;
   },
 
   id(id = undefined) {
@@ -89,4 +103,7 @@ const testingDB: {
   },
 };
 
+export { testingDB };
+
+// deprecated, for backward compatibility
 export default testingDB;

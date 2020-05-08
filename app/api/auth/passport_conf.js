@@ -1,5 +1,3 @@
-/** @format */
-
 import passport from 'passport';
 import LocalStrategy from 'passport-local';
 import users from 'api/users/users';
@@ -27,8 +25,7 @@ passport.serializeUser((user, done) => {
 });
 
 passport.deserializeUser((id, done) => {
-  users.getById(id).then(user => {
-    delete user.password;
+  users.getById(id, '-password').then(user => {
     done(null, user);
   });
 });
