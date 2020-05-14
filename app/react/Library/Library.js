@@ -31,10 +31,6 @@ export default class Library extends RouteHandler {
     return requestState(requestParams, globalResources);
   }
 
-  // setReduxState(state) {
-  //   setReduxState(state, this.context);
-  // }
-
   urlHasChanged(nextProps) {
     return nextProps.location.query.q !== this.props.location.query.q;
   }
@@ -48,6 +44,12 @@ export default class Library extends RouteHandler {
 
   componentWillUnmount() {
     this.emptyState();
+  }
+
+  componentWillReceiveProps(nextProps) {
+    if (this.urlHasChanged(nextProps)) {
+      this.getClientState(nextProps);
+    }
   }
 
   emptyState() {

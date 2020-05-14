@@ -345,5 +345,10 @@ export default function() {
       baseQuery.size = size;
       return this;
     },
+
+    offset(from) {
+      baseQuery.from = from;
+      return this;
+    },
   };
 }

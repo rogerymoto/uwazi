@@ -447,6 +447,10 @@ const instanceSearch = elasticIndex => ({
         documentsQuery.limit(query.limit);
       }
 
+      if (query.offset) {
+        documentsQuery.offset(query.offset);
+      }
+
       if (query.includeUnpublished && user && !query.unpublished) {
         documentsQuery.includeUnpublished();
       }
