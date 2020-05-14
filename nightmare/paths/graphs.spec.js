@@ -4,6 +4,7 @@ import { toMatchImageSnapshot } from 'jest-image-snapshot';
 import createNightmare from '../helpers/nightmare';
 import insertFixtures from '../helpers/insertFixtures';
 import { loginAsAdminAndGoToSettings } from '../helpers/commonTests';
+import { element } from 'prop-types';
 
 expect.extend({ toMatchImageSnapshot });
 
@@ -79,6 +80,13 @@ describe('pages path', () => {
 
       expect(chartsContainerHTML).toContain('class="recharts-responsive-container"');
 
+      await nightmare.evaluate(() => document.querySelector('header').remove());
+      await nightmare.evaluate(() => document.querySelector('.footer-nav').remove());
+      await nightmare.evaluate(() => document.querySelector('footer').remove());
+      await nightmare.evaluate(() => document.querySelector('#app').style.padding = '0');
+      await nightmare.evaluate(() => document.querySelector('.page-viewer').style.padding = '0');
+      await nightmare.evaluate(() => document.querySelector('.main-wrapper').style.padding = '0');
+
       const pageScreenshot = await nightmare.screenshot();
       expect(pageScreenshot).toMatchImageSnapshot({
         failureThreshold: 0.01,
@@ -116,6 +124,13 @@ describe('pages path', () => {
         .getInnerHtml('div.markdown-viewer');
 
       expect(chartsContainerHTML).toContain('class="recharts-responsive-container"');
+
+      await nightmare.evaluate(() => document.querySelector('header').remove());
+      await nightmare.evaluate(() => document.querySelector('.footer-nav').remove());
+      await nightmare.evaluate(() => document.querySelector('footer').remove());
+      await nightmare.evaluate(() => document.querySelector('#app').style.padding = '0');
+      await nightmare.evaluate(() => document.querySelector('.page-viewer').style.padding = '0');
+      await nightmare.evaluate(() => document.querySelector('.main-wrapper').style.padding = '0');
 
       const pageScreenshot = await nightmare.screenshot();
       expect(pageScreenshot).toMatchImageSnapshot({
